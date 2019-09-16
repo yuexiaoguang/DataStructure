@@ -1,8 +1,6 @@
 package com.array.sparse;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * 稀疏矩阵的十字链表
@@ -23,32 +21,22 @@ public class OrthogonalListMatrix {
                                             };
 
     private final int rows = matrix.length, cols = matrix[0].length;
-    private final List<Element> eles = new ArrayList<>();
     
     /**
      * 每一行的第一个非零元素在eles中的索引
      */
-    private final int[] rhead = new int[rows];
+    private final Element[] rhead = new Element[rows];
     /**
      * 每一列的第一个非零元素在eles中的索引
      */
-    private final int[] chead = new int[cols];
+    private final Element[] chead = new Element[cols];
     
-    {
-        Arrays.fill(rhead, -1);
-        Arrays.fill(chead, -1);
-    }
     
     public static void main(String[] args) {
         OrthogonalListMatrix matrix = new OrthogonalListMatrix();
         matrix.toArray();
         matrix.print();
         System.out.println("------------------");
-        System.out.println("行索引rhead: " + Arrays.toString(matrix.rhead));
-        System.out.println("列索引chead: " + Arrays.toString(matrix.chead));
-        Element e = matrix.eles.get(1);
-        System.out.println("行: " + e.getRow() + "; 列: " + e.getCol() + "; 值: " + e.getValue() + "; 右: " + e.getRight() + "; 下: " + e.getDown());
-        System.out.println();
         matrix.get(3, 5);
     }
     
@@ -61,24 +49,21 @@ public class OrthogonalListMatrix {
                     continue;
                 }
                 Element ele = new Element(i, j, value);
-                eles.add(ele);
                 
-                // 刚刚放进去的元素的索引
-                int p = eles.lastIndexOf(ele);
-                // 1. 这一行的第一个非零元素的索引
-                int rh = rhead[i];
-                if (-1 == rh) {
-                    rhead[i] = p;
+                // 1. 这一行的第一个非零元素
+                Element rh = rhead[i];
+                if (null == rh) {
+                    rhead[i] = ele;
                 }
                 
-                // 2. 这一列的第一个非零元素的索引
-                int ch = chead[j];
-                if (-1 == ch) {// 这一列还没有设置第一个非零元素的索引
-                    chead[j] = p;
+                // 2. 这一列的第一个非零元素
+                Element ch = chead[j];
+                if (null == ch) {// 这一列还没有设置第一个非零元素的索引
+                    chead[j] = ele;
                 }
                 
                 // 3. 设置这一行元素的链
-                Element rl = this.eles.get(rhead[i]);// 这一行最后一个非零元素
+                Element rl = rhead[i];// 这一行最后一个非零元素
                 while (rl.getRight() != null) {
                     rl = rl.getRight();
                 }
@@ -87,7 +72,7 @@ public class OrthogonalListMatrix {
                 }
                 
                 // 4. 设置这一列元素的链
-                Element cl = this.eles.get(chead[j]);// 这一列最后一个非零元素
+                Element cl = chead[j];// 这一列最后一个非零元素
                 while (cl.getDown() != null) {
                     cl = cl.getDown();
                 }
@@ -99,13 +84,19 @@ public class OrthogonalListMatrix {
     }
     
     public void print() {
-        int[][] copy = new int[rows][cols];
-        for (Element e : eles) {
-            copy[e.getRow()][e.getCol()] = e.getValue();
-        }
-        for (int[] c : copy) {
-            for (int e : c) {
-                System.out.print(e);
+        // 按行遍历
+        for (int i = 0; i < rhead.length; i++) {
+            Element e = rhead[i];// 这一行的第一个非零元
+            for (int j = 0; j < chead.length; j++) {
+                if (null != e && i == e.getRow() && j == e.getCol()) {// 非零元
+                    System.out.print(e.getValue());
+                    System.out.print(" ");
+                    
+                    e = e.getRight();
+                    continue;
+                }
+                // 其它都打印 0
+                System.out.print(0);
                 System.out.print(" ");
             }
             System.out.println();
@@ -117,8 +108,8 @@ public class OrthogonalListMatrix {
         if (row > rhead.length || col > chead.length) {
             return;
         }
-        Element rf = this.eles.get(rhead[row]);// 这一行的第一个非零元素
-        Element cf = this.eles.get(chead[col]);// 这一列的第一个非零元素
+        Element rf = rhead[row];// 这一行的第一个非零元素
+        Element cf = chead[col];// 这一列的第一个非零元素
         if (rf == cf) {// 刚好是这一个
             System.out.println(rf.getValue());
             return;
