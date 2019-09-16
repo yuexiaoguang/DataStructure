@@ -57,8 +57,5 @@ public class RBTreeTest {
                 System.out.printf("\n");
             }
         }
-
-        // 销毁二叉树
-        tree.clear();
     }
 }
